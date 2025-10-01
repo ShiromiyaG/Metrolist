@@ -22,6 +22,7 @@ jobs:
     executor:
       name: android/android_docker
       tag: 2025.03.1
+      resource_class: xlarge
     steps:
       - checkout
       - android/restore_gradle_cache
