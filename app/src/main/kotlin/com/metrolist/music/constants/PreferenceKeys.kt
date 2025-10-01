@@ -43,6 +43,13 @@ val YtmSyncKey = booleanPreferencesKey("ytmSync")
 val CheckForUpdatesKey = booleanPreferencesKey("checkForUpdates")
 val UpdateNotificationsEnabledKey = booleanPreferencesKey("updateNotifications")
 
+// Subsonic/Navidrome server configuration
+val SubsonicServerUrlKey = stringPreferencesKey("subsonicServerUrl")
+val SubsonicUsernameKey = stringPreferencesKey("subsonicUsername")
+val SubsonicPasswordKey = stringPreferencesKey("subsonicPassword")
+val SubsonicEnabledKey = booleanPreferencesKey("subsonicEnabled")
+val SubsonicMaxBitRateKey = intPreferencesKey("subsonicMaxBitRate")
+
 val AudioQualityKey = stringPreferencesKey("audioQuality")
 
 enum class AudioQuality {

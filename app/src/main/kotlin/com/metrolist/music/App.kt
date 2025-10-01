@@ -86,6 +86,9 @@ class App : Application(), SingletonImageLoader.Factory {
             secret = BuildConfig.LASTFM_SECRET.takeIf { it.isNotEmpty() } ?: ""
         )
 
+        // Initialize Subsonic/Navidrome configuration
+        initializeSubsonic(settings)
+
         if (settings[ProxyEnabledKey] == true) {
             val username = settings[ProxyUsernameKey].orEmpty()
             val password = settings[ProxyPasswordKey].orEmpty()
@@ -181,6 +184,34 @@ class App : Application(), SingletonImageLoader.Factory {
                         Timber.e("Error while loading last.fm session key. %s", e.message)
                     }
                 }
+        }
+
+        // Observe Subsonic settings changes
+        applicationScope.launch(Dispatchers.IO) {
+            dataStore.data
+                .map { Triple(it[SubsonicServerUrlKey], it[SubsonicUsernameKey], it[SubsonicPasswordKey]) }
+                .distinctUntilChanged()
+                .collect { (serverUrl, username, password) ->
+                    try {
+                        com.metrolist.subsonic.Subsonic.serverUrl = serverUrl.orEmpty()
+                        com.metrolist.subsonic.Subsonic.username = username.orEmpty()
+                        com.metrolist.subsonic.Subsonic.password = password.orEmpty()
+                    } catch (e: Exception) {
+                        Timber.e("Error while loading Subsonic settings. %s", e.message)
+                    }
+                }
+        }
+    }
+
+    private fun initializeSubsonic(settings: androidx.datastore.preferences.core.Preferences) {
+        val serverUrl = settings[SubsonicServerUrlKey].orEmpty()
+        val username = settings[SubsonicUsernameKey].orEmpty()
+        val password = settings[SubsonicPasswordKey].orEmpty()
+
+        if (serverUrl.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty()) {
+            com.metrolist.subsonic.Subsonic.serverUrl = serverUrl
+            com.metrolist.subsonic.Subsonic.username = username
+            com.metrolist.subsonic.Subsonic.password = password
         }
     }
 

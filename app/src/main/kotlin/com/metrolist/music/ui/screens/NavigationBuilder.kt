@@ -70,6 +70,7 @@ import com.metrolist.music.ui.screens.settings.PrivacySettings
 import com.metrolist.music.ui.screens.settings.RomanizationSettings
 import com.metrolist.music.ui.screens.settings.SettingsScreen
 import com.metrolist.music.ui.screens.settings.StorageSettings
+import com.metrolist.music.ui.screens.settings.SubsonicSettings
 import com.metrolist.music.ui.screens.settings.UpdaterScreen
 import com.metrolist.music.ui.utils.ShowMediaInfo
 import com.metrolist.music.utils.rememberEnumPreference
@@ -300,6 +301,9 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("settings/player") {
         PlayerSettings(navController, scrollBehavior)
+    }
+    composable("settings/subsonic") {
+        SubsonicSettings(navController, scrollBehavior)
     }
     composable("settings/storage") {
         StorageSettings(navController, scrollBehavior)

@@ -123,7 +123,9 @@ import com.metrolist.music.utils.NetworkConnectivityObserver
 import com.metrolist.music.utils.ScrobbleManager
 import com.metrolist.music.utils.SyncUtils
 import com.metrolist.music.utils.YTPlayerUtils
+import com.metrolist.music.utils.SubsonicPlayerUtils
 import com.metrolist.music.utils.dataStore
+import com.metrolist.music.extensions.isSubsonicId
 import com.metrolist.music.utils.enumPreference
 import com.metrolist.music.utils.get
 import com.metrolist.music.utils.reportException
@@ -770,6 +772,11 @@ class MusicService :
         mediaId: String,
         playbackData: YTPlayerUtils.PlaybackData? = null
     ) {
+        // Skip recovery for Subsonic songs - they're already in database
+        if (mediaId.isSubsonicId()) {
+            return
+        }
+        
         val song = database.song(mediaId).first()
         val mediaMetadata = withContext(Dispatchers.Main) {
             player.findNextMediaItemById(mediaId)?.metadata
@@ -1292,6 +1299,19 @@ class MusicService :
             songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
                 scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
                 return@Factory dataSpec.withUri(it.first.toUri())
+            }
+
+            // Check if this is a Subsonic song
+            if (mediaId.isSubsonicId()) {
+                val streamUrl = runBlocking(Dispatchers.IO) {
+                    SubsonicPlayerUtils.getStreamUrl(mediaId, this@MusicService)
+                } ?: throw PlaybackException(
+                    getString(R.string.error_unknown),
+                    null,
+                    PlaybackException.ERROR_CODE_REMOTE_ERROR
+                )
+                
+                return@Factory dataSpec.withUri(streamUrl.toUri())
             }
 
             val playbackData = runBlocking(Dispatchers.IO) {

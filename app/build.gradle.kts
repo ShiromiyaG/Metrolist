@@ -215,6 +215,7 @@ dependencies {
     implementation(libs.jsoup)
     ksp(libs.hilt.compiler)
 
+    implementation(project(":subsonic"))
     implementation(project(":innertube"))
     implementation(project(":kugou"))
     implementation(project(":lrclib"))

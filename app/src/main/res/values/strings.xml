@@ -340,4 +340,21 @@
     <string name="new_version_available">New version available</string>
     <string name="translation_models">Translation Models</string>
     <string name="clear_translation_models">Clear translation models</string>
+
+    <!-- Subsonic/Navidrome Settings -->
+    <string name="subsonic_settings">Subsonic/Navidrome</string>
+    <string name="enable_subsonic">Enable Subsonic/Navidrome</string>
+    <string name="enable_subsonic_description">Connect to your self-hosted music server</string>
+    <string name="subsonic_server_config">Server Configuration</string>
+    <string name="subsonic_server_url">Server URL</string>
+    <string name="server_configuration">Server Configuration</string>
+    <string name="not_configured">Not configured</string>
+    <string name="test_connection">Test Connection</string>
+    <string name="testing_connection">Testing connection…</string>
+    <string name="connection_successful">Connection successful!</string>
+    <string name="connection_failed">Connection failed</string>
+    <string name="verify_server_connection">Verify your server is reachable</string>
+    <string name="max_bitrate">Maximum Bitrate</string>
+    <string name="subsonic_playing_from_server">Playing from your Subsonic server</string>
+    <string name="subsonic_search_results">Results from your Subsonic server</string>
 </resources>

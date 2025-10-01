@@ -27,6 +27,8 @@ import com.metrolist.music.utils.dataStore
 import com.metrolist.music.utils.get
 import com.metrolist.music.utils.SyncUtils
 import com.metrolist.music.utils.reportException
+import com.metrolist.music.constants.SubsonicEnabledKey
+import com.metrolist.music.repositories.SubsonicRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +45,7 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val database: MusicDatabase,
     val syncUtils: SyncUtils,
+    private val subsonicRepository: SubsonicRepository,
 ) : ViewModel() {
     val isRefreshing = MutableStateFlow(false)
     val isLoading = MutableStateFlow(false)
@@ -67,6 +70,10 @@ class HomeViewModel @Inject constructor(
     val allLocalItems = MutableStateFlow<List<LocalItem>>(emptyList())
     val allYtItems = MutableStateFlow<List<YTItem>>(emptyList())
 
+    // Subsonic items
+    val subsonicQuickPicks = MutableStateFlow<List<Song>?>(null)
+    val isSubsonicEnabled = MutableStateFlow(false)
+
     // Account display info
     val accountName = MutableStateFlow("Guest")
     val accountImageUrl = MutableStateFlow<String?>(null)
@@ -78,9 +85,36 @@ class HomeViewModel @Inject constructor(
     private var isProcessingAccountData = false
 
     private suspend fun getQuickPicks(){
-        when (quickPicksEnum.first()) {
-            QuickPicks.QUICK_PICKS -> quickPicks.value = database.quickPicks().first().shuffled().take(20)
-            QuickPicks.LAST_LISTEN -> songLoad()
+        // Check if Subsonic is enabled
+        val subsonicEnabled = context.dataStore.data.first()[SubsonicEnabledKey] ?: false
+        isSubsonicEnabled.value = subsonicEnabled
+
+        if (subsonicEnabled) {
+            // Load from Subsonic
+            loadSubsonicQuickPicks()
+        } else {
+            // Load from YouTube as before
+            when (quickPicksEnum.first()) {
+                QuickPicks.QUICK_PICKS -> quickPicks.value = database.quickPicks().first().shuffled().take(20)
+                QuickPicks.LAST_LISTEN -> songLoad()
+            }
+        }
+    }
+
+    private suspend fun loadSubsonicQuickPicks() {
+        try {
+            // Get random songs from Subsonic
+            subsonicRepository.getRandomSongsForHomescreen(20).onSuccess { songs ->
+                subsonicQuickPicks.value = songs
+                quickPicks.value = songs // Also set main quick picks
+            }.onFailure {
+                reportException(it)
+                // Fallback to local database
+                quickPicks.value = database.quickPicks().first().shuffled().take(20)
+            }
+        } catch (e: Exception) {
+            reportException(e)
+            quickPicks.value = database.quickPicks().first().shuffled().take(20)
         }
     }
 

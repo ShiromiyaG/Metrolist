@@ -87,6 +87,11 @@ fun SettingsScreen(
                     icon = painterResource(R.drawable.language),
                     title = { Text(stringResource(R.string.content)) },
                     onClick = { navController.navigate("settings/content") }
+                ),
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.sync),
+                    title = { Text(stringResource(R.string.subsonic_settings)) },
+                    onClick = { navController.navigate("settings/subsonic") }
                 )
             )
         )
