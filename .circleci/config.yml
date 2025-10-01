@@ -41,4 +41,4 @@ jobs:
 workflows:
   build-only:
     jobs:
-      - build-arm64
+      - build
