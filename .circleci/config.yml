@@ -4,40 +4,37 @@ orbs:
   android: circleci/android@3.1.0
 
 jobs:
-  build:
+  build-signed:
     executor:
       name: android/android_docker
       tag: 2025.03.1
-      resource_class: large 
     steps:
       - checkout
-      - android/restore_gradle_cache
+      
       - run:
-          name: Build APK
-          command: ./gradlew assembleRelease
+          name: Decode Keystore
+          command: echo $BASE64_KEYSTORE | base64 --decode > app/keystore.jks
+      
+      - android/restore_gradle_cache
+      
+      - run:
+          name: Build Signed Release APK
+          command: ./gradlew assembleRelease -x test
+          environment:
+            LASTFM_API_KEY: $LASTFM_API_KEY
+            LASTFM_SECRET: $LASTFM_SECRET
+      
       - android/save_gradle_cache
+      
       - store_artifacts:
           path: app/build/outputs/apk/arm64/release/
-  test:
-    executor:
-      name: android/android_docker
-      tag: 2025.03.1
-    steps:
-      - checkout
-      - android/restore_gradle_cache
-      - android/run_tests:
-          test_command: ./gradlew testDebug
-      - android/save_gradle_cache
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
+          destination: signed-apk
+      
+      - store_artifacts:
+          path: app/build/outputs/bundle/arm64/release/
+          destination: signed-aab
 
 workflows:
-  build-only:
+  build-and-sign:
     jobs:
-      - build
+      - build-signed
